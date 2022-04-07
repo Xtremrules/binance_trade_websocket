@@ -4,7 +4,10 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Iterables;
+import com.structure.binancetrade.Impl.BinanceApiWebSocketClientImpl;
 import com.structure.binancetrade.cache.CacheStore;
+import com.structure.binancetrade.client.BinanceApiWebSocketClient;
 import com.structure.binancetrade.constant.BinanceApiConstants;
 import com.structure.binancetrade.domain.SymbolInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 @Component
 @Slf4j
@@ -31,6 +37,12 @@ public class Runner implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("This is runner");
 
+        populateSymbolCacheStore();
+
+        tradeStream();
+    }
+
+    private void populateSymbolCacheStore() throws IOException {
         String url = BinanceApiConstants.API_GET_SYMBOL_URL;
 
         Request request = new Request.Builder()
@@ -57,5 +69,28 @@ public class Runner implements CommandLineRunner {
 
             symbolInfoCacheStore.add(name, symbolInfo);
         }
+    }
+
+    private void tradeStream(){
+        Set<String> pairs = symbolInfoCacheStore.getAllKeys();
+        log.info("PAIR SIZE: {}", pairs.size());
+
+        Iterable<List<String>> subSets = Iterables.partition(pairs, 1000);
+
+        final int[] count = {1};
+
+        subSets.forEach(iterator -> {
+            log.info("Pair Count: {}", (long) iterator.size());
+            String data = String.join(",", iterator);
+
+            BinanceApiWebSocketClient binanceApiWebSocketClient = new BinanceApiWebSocketClientImpl(client);
+
+            int finalCount = count[0];
+            binanceApiWebSocketClient.onTradeEvent(data, response -> {
+                log.info("Trade {}: {}", finalCount, response.toString());
+            });
+
+            count[0]++;
+        });
     }
 }
