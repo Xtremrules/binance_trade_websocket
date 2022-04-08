@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.structure.binancetrade.constant.BinanceApiConstants;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.math.BigDecimal;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TradeEvent {
     @JsonProperty("e")
@@ -20,10 +22,57 @@ public class TradeEvent {
     private long tradeId;
 
     @JsonProperty("p")
-    private String price;
+    private BigDecimal price;
 
     @JsonProperty("q")
     private String quantity;
+
+    public String getEventType() {
+        return eventType;
+    }
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
+
+    public long getEventTime() {
+        return eventTime;
+    }
+
+    public void setEventTime(long eventTime) {
+        this.eventTime = eventTime;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public String getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(String quantity) {
+        this.quantity = quantity;
+    }
+
+    public long getTradeId() {
+        return tradeId;
+    }
+
+    public void setTradeId(long tradeId) {
+        this.tradeId = tradeId;
+    }
 
     @Override
     public String toString() {
