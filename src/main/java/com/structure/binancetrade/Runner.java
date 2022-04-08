@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
 import com.structure.binancetrade.Impl.BinanceApiWebSocketClientImpl;
 import com.structure.binancetrade.cache.CacheStore;
+import com.structure.binancetrade.service.WebSocketEventStore;
 import com.structure.binancetrade.client.BinanceApiWebSocketClient;
 import com.structure.binancetrade.constant.BinanceApiConstants;
 import com.structure.binancetrade.domain.SymbolInfo;
@@ -29,6 +30,8 @@ import java.util.Set;
 public class Runner implements CommandLineRunner {
     @Autowired
     CacheStore<SymbolInfo> symbolInfoCacheStore;
+    @Autowired
+    WebSocketEventStore webSocketEventStore;
 
     OkHttpClient client = new OkHttpClient();
 
@@ -87,6 +90,7 @@ public class Runner implements CommandLineRunner {
 
             int finalCount = count[0];
             binanceApiWebSocketClient.onTradeEvent(data, response -> {
+                webSocketEventStore.AddTradeEvent(response);
                 log.info("Trade {}: {}", finalCount, response.toString());
             });
 
